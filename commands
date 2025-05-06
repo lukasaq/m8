@@ -1,1 +1,126 @@
+############## mod 8 lesson 1 ##################
+################ Libraries ################### 
+
+Get-Process explorer : Query for the explorer process
+(Get-Process explorer).Modules : To view the loaded modules for the explorer process,
+
+Run the following commands to find the processes for the specified module:
+$processes = Get-Process
+foreach($process in $processes) {
+ foreach($module in $process.Modules){
+  if ($module.ModuleName -eq 'advapi32.dll'){
+   $process
+  }
+ }
+}
+
+
+$credentials = Get-Credential : Run the following command to store the credentials for the remote computer
+Invoke-Command -Credential $credentials -ComputerName 'cda-dc' -ScriptBlock {Get-Process} : Use Invoke-Command to query the currently running processes on the remote computer
+$processes = Invoke-Command -Credential $credentials -ComputerName 'cda-dc' -ScriptBlock {Get-Process} : further analyze the processes, use the following command to copy the collection locally
+
+Enter the following commands to filter the processes for specific loaded modules
+
+foreach($process in $processes) {
+ foreach($module in $process.Modules){
+  if ($module -like '*advapi32.dll*'){
+   $process
+  }
+ }
+}
+
+Compiling and Executing a Library for AppInit_DLLs ##################
+
+Compile the library using MinGW’s GNU Compiler Collection (GCC
+gcc -shared -o dllmain.dll dllmain.cpp : Compile the library using MinGW’s GNU Compiler Collection (GCC):
+
+GCC is executed using the following parameters:
+- shared: Indicates output should be a shared library
+- o: Indicates the path to the output file (dllmain.dll in this case)
+- unnamed parameters: Input files to be used (dllmain.cpp in this case)
+
+Detection #######################
+
+the following PowerShell commands determine if the current system is configured with AppInit DLLs:
+Get-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Windows" -Name "LoadAppInit_DLLs"
+Get-ItemProperty -Path "HKLM:\SOFTWARE\Wow6432Node\Microsoft\Windows NT\CurrentVersion\Windows" -Name "LoadAppInit_DLLs"
+
+from before, If any of these commands returns a 1, then the system is configured to use AppInit. The library or libraries loaded are discerned via:
+Get-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Windows" -Name "AppInit_DLLs"
+
+############## mod 8 lesson 2 ##################
+################ Libraries ################### 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 

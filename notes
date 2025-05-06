@@ -1,1 +1,182 @@
+############## mod 8 lesson 1 ##################
+################ Libraries ################### 
+
+image saved m8l1_1
+
+libraries are resources that contain code and/or data.
+Libraries are referenced by new programs via a process known as linking. Libraries are linked statically or dynamically. Static linking copies all the referenced portions of the library into the resulting program image, while dynamic linking references the library instead of copying the library.
+
+
+On Windows, libraries that are intended to be statically linked use the .lib file extension by convention. Linux prepends these files with lib and the file ending with .a. Since static libraries are copied to, and included in, the resulting binary at compile time, updating these libraries generally requires recompiling the program.
+
+
+On Windows, dynamic libraries use the .dll file extension by convention; Linux uses .so. These libraries are stored externally to the application, so they can be updated independently of the executable that uses them.
+
+On Windows, dynamic libraries can be found in various places. Libraries shared by multiple applications might exist in a specific shared library, like an installation in C:\Program Files\ or by convention by the library provider.
+Libraries are also found in an application’s directory or in Windows system folders like System32.
+
+Windows systems, there are various readily available programs to view modules (libraries) loaded by processes including Process Explorer, Process Hacker, PowerShell’s Get-Process cmdlet, etc.
+
+SafeSearch Order:
+ Directory application is located in
+System directory (typically C:\Windows\System32)
+16-bit System directory (typically C:\Windows\System)
+Windows directory (typically C:\Windows\)
+Current working directory
+Directories listed in PATH environment variable
+
+
+Examining Libraries ##########################
+
+Analyst toolkits include many tools for viewing and interacting with dynamic libraries. There are several classes of tools for analyzing libraries and executables, such as:
+- Decompiler: Attempts to reconstruct a library or program executable into source code that can be compiled into the same assembly. May require formatting and relabeling code in order to be comprehensible.
+
+- Portable Executable (PE) Header/Metadata Analyzer: Examines the headers and other structures of an assembly to reveal information about the assembly, such as its dependencies and extracting resources from the 
+file.
+- String Analyzer/Dumper: Dumps all strings contained in an assembly for analysis.
+- Disassembler: Breaks down native libraries into readable assembly code for analyzing behavior of a library or executable.
+- Hex Editor: Allows viewing and editing of raw binaries; displays data using hexadecimal. Often contains the ability to view binary as various data formats, such as strings or integers.
+
+Attacks Involving Libraries #######################
+MITRE Adversarial Tactics, Techniques, and Common Knowledge (ATT&CK) Framework ########################
+
+MITRE lists many Techniques, Tactics, and Procedures (TTP) that attackers use libraries in order to execute. A selection of these TTPs is covered, or use MITRE ATT&CK Navigator to explore TTPs, including those that are not covered here.
+
+Dynamic libraries are used to achieve an attacker’s goal, including:
+- Persistence
+- Privilege Escalation
+- Defense Evasion
+
+The following techniques are used to accomplish one or more of the above tactics:
+
+T1546.10: Event Triggered Execution: AppInit DLLs
+Causes a library to be loaded any time an application that references User32.dll is executed, which encompasses most applications — allowing persistence. DllMain entries are used to execute code under that application’s context, which potentially allows for privilege escalation.
+
+T1055.001: Process Injection: DLL Injection
+DLL Injection: Attach to another process, then load a specified library — triggering the execution of code under that process’s context. This allows for privilege
+
+T1574.002: Hijack Execution Flow: DLL Side-Loading
+DLL Side-Loading: Application manifest files describe the version of a library that is loaded. If this manifest is vague or imprecise, an attacker can exploit this weakness to load a malicious library instead of the intended library. This allows an attacker to gain persistence by hijacking a common process, some defense evasion by its nature of executing under a trusted process, and a potential for privilege escalation if the process has elevated permissions.
+
+T1574.001: Hijack Execution Flow: DLL Search Order Hijacking
+Hijack Execution Flow: DLL Load Order attack takes advantage of weaknesses in some applications and the order of paths those libraries are loaded from. An attacker creates a malicious DLL that replaces a DLL expected by the application and executes code under the context of that application, allowing the attacker to potentially become persistent, escalate privileges, or evade defenses.
+
+T1574.006: Hijack Execution Flow: LD_PRELOAD
+LD_PRELOAD: A shared library attack for Linux that allows an attacker to override which library loads when a process loads a specific library by setting the LD_PRELOAD environment variable 
+
+Detection #######################
+
+Detection for each of these techniques typically involves the detection of libraries being loaded from unusual locations. This behavior is not typically logged by default on modern OSs. The installation of monitoring software is often necessary to detect these attacks, however, some of these methods leave behind artifacts — especially if in current use for persistence — such as:
+
+T1546.010: AppInit DLL
+Registry entries, such as HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Windows\LoadAppInit_DLLs
+Malicious library in the path it is loaded from
+
+T1055.001: DLL Injection
+Malicious library or libraries used during the attackLoaded by processes
+
+T1574.002: DLL Side-Loading
+Malicious library or libraries used during the attack in C:\Windows\WinSXS folder
+Library manifests in C:\Windows\WinSXS folder
+
+T1547.004: DLL Load Order
+Malicious library in a search path
+
+T1574.006: LD_PRELOAD
+Malicious library used during the attack
+Persistent environmental variable change to the LD_PRELOAD variable
+
+Detection of currently loaded malicious libraries is accomplished by querying modules loaded by processes on the system and analyzing them. This requires baseline information about the system and other hosts within the organization.
+
+############## mod 8 lesson 2 ##################
+################ Libraries ################### 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 

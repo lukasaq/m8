@@ -51,27 +51,48 @@ Get-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Windo
 ############## mod 8 lesson 2 ##################
 ################ Libraries ################### 
 
+taskkill /PID 4376 /F : kills task base of pid
+taskkill /IM notepad.exe /F : kills task base off of process name
 
 
+Get-Process -name "firefox"
+Get-Process -id 252
+Get-Process -name exp*,pow*
+Stop-Process -name firefox
+Start-Process -FilePath "notepad.exe"
+Stop-Process -id 212
+Get-Process -name powershell -IncludeUserName
+
+Run the following command to see which parent process ID spawns the running processes
+important : Get-CimInstance -Class Win32_Process | Select-Object ProcessId,ProcessName,ParentProcessId
+
+Print the WMI object for the powershell.exe process with the command
+Get-CimInstance -class Win32_Process -filter "name = 'powershell.exe'" | Format-List *
+
+Use the WMI GetOwner method with the command
+Get-CimInstance -class Win32_Process -filter "name = 'powershell.exe'" | Invoke-CimMethod -MethodName GetOwner | Format-List *
 
 
+invoke-command cda-acct-1, cda-acct-2, cda-acct-3 -scriptblock {get-process powershell -module}
 
 
+Get-ciminstance -class win32_process -filter "name = 'powershell.exe'" -computername cda-acct-1 | select processname, processid, 
+parentprocessid
 
 
+Get-ciminstance -class win32_process -filter "processid = '2872'" -computer cda-acct-1 | select processname, processid
 
 
+Get-ciminstance -class win32_process -filter "name = 'powershell.exe'" -computername cda-acct-1 | format-list *
 
 
+invoke-command -computername cda-acct-1 -scriptblock {get-process -name powershell -includeusername}
 
 
+invoke-command -computername cda-acct-1 -scriptblock {(get-process -name powershell -includeusername).username}
 
-
-
-
-
-
-
+############## mod 8 lesson 3 ##################
+################ Windows API ################### 
 
 
 

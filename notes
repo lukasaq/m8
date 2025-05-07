@@ -91,28 +91,70 @@ Detection of currently loaded malicious libraries is accomplished by querying mo
 ############## mod 8 lesson 2 ##################
 ################ Libraries ################### 
 
+ process is an executing program — typically based on the Portable Execution (PE) file format 
+
+ process has numerous elements including:
+- A private virtual memory space
+- An executable program image
+- Handles to kernel objects
+- A security token
+- A unique Process Identifier (PID)
+- One or more threads to execute instructions
+
+Windows, memory space is divided into an area that user-mode processes access and a second area that is used exclusively by the kernel and kernel processes. 
+
+32-bit systems, each process is allocated 2 Gigabytes (GB) for its user-mode memory space while the kernel gets 2GB shared across all processes. In 64-bit systems, each process can theoretically be allocated Terabytes (TB) of user-mode memory space while the kernel also gets TBs of memory space across all processes.
+
+Windows Memory Manager, part of the kernel space Executive, decides where each process’s data is mapped in the computer’s physical RAM, or if it is stored on the computer’s hard drive in a process known as Paging.
+
+Paging is the process by which Windows stores infrequently accessed information for processes on a system’s hard drive — in what is known as a paging file
 
 
+each process receives the same range of addresses within their private virtual memory space, processes are not guaranteed to use the same memory addresses within that private memory space each time they are run. Modern Windows processes take advantage of Address Space Layout Randomization (ASLR). ASLR is a security mechanism that instructs the Windows loader randomize the base memory address of executables and the position of libraries, heap, and the stack in a processes' address space. ASLR is primarily intended to defend against memory-based exploits like buffer overflows by eliminating an exploit’s ability to rely on hardcoded memory addresses. ASLR does not defeat memory based exploits or attacks, but increases the difficulty to reliably gain control of execution, reducing the likelihood of a successful attack.
+
+stack is an area of memory determined at compile time, and is used as storage for temporary variables and functions used by a program. The heap, in contrast, is used to store data that is provided to the process at runtime because the developer cannot anticipate exactly what information is input into the program in advance. 
+
+Notably, in the interest of being memory efficient, system Dynamic Link Libraries (DLL) are shared between processes and commonly mapped to the same locations in virtual memory. Notepad.exe and MicrosoftEdge.exe have the DLL urlmon.dll mapped to the same location,
+
+Any action that involves interaction with a computer’s hardware requires assistance from the kernel. 
+
+When a user logs into Windows, the system generates and associates a security token with that user account. Each process that user starts receives the security token, which includes the identity and privileges of the user account. 
+
+Security tokens contain a range of information, such as the Security Identifier (SID) of the originating user account, the SIDs for the groups which the account is a member, and a list of privileges held by that user or that user’s groups.
+
+Each process, when it is created, receives a unique PID. A PID can be used to locate a running process and create a handle to it, like a kernel object.
+
+A thread has multiple components:
+- Memory
+- Execution contex
+- Thread local storage
+- Security token
+- Message queue
+- Thread ID
+- State
+- Priority
+
+. Memory can also be dynamically allocated by a thread, which would be in the process’s heap; dynamic memory is shared between threads, while the stack memory is not.
+
+TLS provides a mechanism for a thread to store data relevant only to it — without needing to share that information across other threads.
+
+Like processes, threads also have unique IDs that other applications can use to identify specific threads and create handles pointing to them. A thread ID is only unique for as long as a thread exists; once a thread has finished executing, its ID is relinquished and can be reused by the system for a new thread.
+
+Each thread has a state which represents whether it is currently executing instructions. For example, some states include Ready (meaning the thread is available for the OS to execute it), Standby (meaning the thread has been selected as the next thread to execute), Wait (meaning the thread is currently paused and waiting for an operation to complete or a resource to become free), and Running (meaning the thread is currently executing).
 
 
+This process is responsible for enforcing security policy on the system, including logon verification, password policy, writing to Windows security logs, and the creation of access tokens. Credentials are often stored in lsass process memory for use by accounts during a login session. Since it contains those credentials, dumping lsass memory is a valued target of threat actors during the following types of attacks:
+MITRE ATT&CK OS Credential Dumping: LSASS Memory T1003.001: https://attack.mitre.org/techniques/T1003/001/ MITRE ATT&CK Boot or Logon Autostart Execution: LSASS Driver T1547.008: https://attack.mitre.org/techniques/T1547/008/ MITRE ATT&CK Modify Authentication Process T1556: https://attack.mitre.org/techniques/T1556/ 
 
 
+This application is used to launch functionality stored in shared DLL files. The valid process is normally located at C:\Windows\System32\rundll32.exe, but sometimes malware uses the same filename and runs from a different directory in order to disguise itself, so determining the executable file path is important if this process is suspect. Additionally, threat actors may abuse the allowlists or false positives from normal operations associated with rundll32.exe to proxy execution of malicious code. By bootstrapping a shared module through rundll32.exe, instead of executing directly, they may avoid defensive mechanism on a system. This method is described further in MITRE technique ID T1218.011 Signed Binary Proxy Execution: Rundll32.
 
 
+Additional Resources
+MITRE ATT&CK Signed Binary Proxy Execution: Rundll32: https://attack.mitre.org/techniques/T1218/011/ MITRE ATT&CK Masquerading: Match Legitimate Name or Location: https://attack.mitre.org/techniques/T1036/005/
 
-
-
-
-
-
-
-
-
-
-
-
-
-
+############## mod 8 lesson 3 ##################
+################ Windows API ################### 
 
 
 

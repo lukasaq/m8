@@ -94,15 +94,17 @@ invoke-command -computername cda-acct-1 -scriptblock {(get-process -name powersh
 ############## mod 8 lesson 3 ##################
 ################ Windows API ################### 
 
+tasklist /fi "imagename eq explorer.exe" /m : List all libraries loaded for the explorer.exe process
+tasklist /s 172.16.3.2 /u Administrator /fi "imagename eq wmiprvse.exe" /m : List all libraries loaded for the wmiprvse.exe process on a remote computer
+Get-Process “explorer” | Select-Object -ExpandProperty Modules -ErrorAction SilentlyContinue | Format-Table -Autosize :  view DLLs loaded by the explorer.exe process on the local machine,
+listdlls -h : pen the help menu for the utility with the command
 
+List all DLLs loaded by cmd.exe with the following command
+listdlls cmd
+listdlls -r cmd
 
-
-
-
-
-
-
-
+List all processes that have loaded the DLL advapi32.dll with the following command:
+listdlls -d advapi32.dll | more
 
 
 

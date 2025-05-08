@@ -247,40 +247,90 @@ powershell
 ############## mod 9 lesson 3 ##################
 ################ Windows Logging ################### 
 
+command line
+wevtutil /? : command to see the manual for wevutil.exe
+wevtutil qe System /c:5 /f:text /rd : command to show the five most recent log entries in the System log:
+The qe option followed by System is the syntax for querying events from the specified System log
+The /c:5 option tells this utility to display a count of the last five entries
+The /f:text option tells this utility to format the output in readable text; the default output format is XML.
+The /rd option tells this utility to list events in reverse direction, which means newest first.
+While not necessary here, if the output is too long for the user to scroll through, it can be helpful to pipe it to a terminal scroll utility using the syntax | more, or write it to a file using the syntax >> file.txt.
+
+wevtutil qe System /c:1  : see the default — i.e., difficult to read — format looks like, run the following command with no formatting flags:
+wevtutil qe System /q:"*[System[(EventID=104)]]" /f:text : command to return all System logs with event ID 104 — Log clear:
+wevtutil qe System /q:"*[System[(Level=2)]]" /f:text | more : command to retrieve all Error level logs in the System log
+wevtutil qe System /q:"*[System[(Level=2 or Level=3)]]" /f:text | more : command to retrieve all Error and Warning level logs in the System log.
+
+It may be necessary to run these commands on a remote computer to which an analyst has authenticated access. The format for such a command is
+wevtutil /r:[computer name OR IP] /u:[username] /p:[password] [remaining options]
+
+wevtutil /r:CDA-ACCT-1 /u:"CDA\trainee" /p:"Th1s is 0perational Cyber Training!" qe System /c:1 /f:text /rd : List the most recent event of the System log on remote system CDA-ACCT-1 with the command:
+
+The wevtutil.exe utility is a powerful tool for searching through Windows event logs, especially when combined with the knowledge of which event log IDs are of interest to the analyst performing such queries during a CPT hunt or clear operation. 
+command line
+
+powershell
+Get-Help Get-WinEvent : 
+Get-WinEvent -ListLog * : command to list the number of log entries in each event log:
+Get-WinEvent -LogName System | Select-Object -First 5 : command to obtain the five most recent entries in the System log
+Get-WinEvent -LogName System | Group-Object -Property ProviderName -NoElement | Sort-Object -Property Count -Descending | Format-Table Name,Count : command to determine how many entries in a log file are from a specific source
+
+This command employs several additional cmdlets to improve the query:
+The Get-WinEvent cmdlet uses:The 
+-LogName parameter to specify the System log;
+The event objects are sent down the pipeline to the Group-Object cmdlet. 
+The Group-Object cmdlet takes all the objects streamed from another cmdlet’s output and groups them by a specified field.
+The -Property option takes as its value a property name, in this case Source, as the field to group objects.
+The -NoElement option omits the members of the group from the output. This prevents the logs themselves from being included and returns only the counts and associated sources.
+he Sort-Object cmdlet sorts the input stream by specified fields.
+The -Property option takes as its value a property name, in this case Count, as the field to sort objects.
+The -Descending option is the direction in which to sort the objects, in this case from highest to lowest.
+The | Format-Table cmdlet appended to the end of the command formats the output so that each property of each object returned is printed in an appropriately-sized column. This formatting makes some output more readable and prevents long strings from being truncated. 
+In this command, the fields Name,Count are specified to include in the formatted table. Alternatively, the wildcard * is used to specify that all fields should be included.
+When there are too many properties in the objects returned as output, Format-List performs a similar function, but with each property printed on its own line in a list of objects.
+The cmdlet Out-Gridview performs a similar and comparable function to Format-List.
+
+Get-WinEvent cmdlet can also be used to find all events of a specific logging level with the following syntax:
+Get-WinEvent [options] | Where-Object -Property Level -EQ [Level #]
+
+Get-WinEvent -LogName System | Where-Object -Property Level -eq 2 | Format-Table Level,Id,Message : command to obtain all errors from a specific log file:
+
+All logs of a specific event ID can be obtained with the following syntax
+Get-WinEvent [options] | Where-Object -Property ID -EQ [Event ID]
+
+Get-WinEvent -LogName System | Where-Object -Property ID -EQ 104 : command to obtain all events in which a log file was cleared (event ID 104)
+Get-WinEvent -LogName System | Where-Object -Property Message -Match 'winlogbeat' | Format-List * :  command to obtain all logs with winlogbeat in the event description
+
+To search events that occurred during a specific time window define the $Begin and $End variables for the query: next 3 commands
+$Begin = '5/24/2021'
+$End = '5/26/2021'
+Get-WinEvent -FilterHashtable @{LogName="System"; StartTime=$Begin; EndTime=$End} | Format-List TimeCreated,Id,Message
+
+ -FilterHashTable option takes as a value a hash table of the form @{[property]=[value],…}. Hash tables are a powerful query mechanism.
 
 
+ with wevtutil.exe, it may be necessary to run any of these PowerShell cmdlets on a remote computer to which an analyst has authenticated access. The format for such a command is
+Invoke-Command -ComputerName [Computer Name] -ScriptBlock {[PowerShell Expression]}
 
+Invoke-Command -ComputerName CDA-ACCT-1 -ScriptBlock {Get-WinEvent -LogName System | Select-Object -First 1 | Format-List *} : Retrieve the most recent event from the System log on neighboring computer CDA-ACCT-1 
 
+powershell
 
+powershell exercise in classs
+Invoke-Command -ComputerName CDA-ACCT-1,CDA-ACCT-2,CDA-ACCT-3 -ScriptBlock {Get-WinEvent -LogName System | where -prop id -eq 7045 | Format-List *}
 
+Invoke-Command -ComputerName CDA-ACCT-3 -ScriptBlock {Get-WinEvent -LogName System | where -prop id -eq 7045 | select message | Format-List *}
 
+powershell exercise in classs
 
+powershell
 
+Get-WinEvent -LogName 'Microsoft-Windows-TaskScheduler/Operational' -ErrorAction SilentlyContinue | Select-Object -First 10 | Format-List * : List the 10 most recent entries in the Task Scheduler operational log file
 
+Get-WinEvent -LogName 'Microsoft-Windows-Powershell/Operational' -ErrorAction SilentlyContinue | Select-Object -First 10 | Format-List * : list the most recent 10 entries in the PowerShell operational log file
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+powershell
+commands
 
 
 

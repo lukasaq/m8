@@ -404,9 +404,107 @@ image saved : PKItable
 ############## mod 9 lesson 3 ##################
 ################ Windows Logging ################### 
 
+image saved : securitylevel
+image saved : userlogontype
+image saved : statuscodes
+image saved : sysmonevents
+image saved : 
+image saved : 
+image saved : 
+image saved : 
+image saved : 
+image saved : 
+image saved : 
+
+Every program that starts on a system posts a notification in an event log, and every well-behaved program posts a notification before it stops. Every system access, security change, non-standard OS behavior, hardware failure, and driver malfunction all end up in one event log or another.
+
+Modern Windows systems store logs in the %SystemRoot%\System32\winevt\logs directory by default in the binary Extensible Markup Language (XML) Windows event logging format, designated by the .evtx extension. 
+
+Events can be logged in the Security, System, and Application event logs or, on modern Windows systems, they may also appear in several other log files.
+
+to save space, log files do not grow indefinitely. By default, Microsoft systems set a maximum log file size at 20480 Kilobytes (KB), and upon reaching that size, it deletes oldest entries first as space is needed to fill the log with more events.
+
+event log entries have several fields in common:
+Log Name: The name of the event log where the event is stored. Useful when processing numerous logs pulled from the same system.
+Source: The service, Microsoft component, or application that generated the event.
+Event Identifier (ID): A code assigned to each type of audited activity. This code is one of the most important fields in an entry, as it is by this code that complex and specific queries can be formed to examine a particular type of behavior.
+Level: The severity assigned to the event in question.
+
+image saved : securitylevel
+
+User: The user account involved in triggering the activity or the user context that the source was running as when it logged the event. Note that this field often indicates System or a user that is not the cause of the event being recorded.
+Operation Code (OpCode): Assigned by the source generating the log. Its meaning is left to the source.
+Logged: The local system date and time when the event was logged.
+Task Category: Assigned by the source generating the log. Its meaning is left to the source.
+Keywords: Assigned by the source and used to group or sort events.
+Computer: The computer on which the event was logged. This is useful when examining logs collected from multiple systems, but should not be considered the device that caused an event(such as when a remote logon is initiated, the Computer field still shows the name of the system logging the event, not the source of the connection).
+Description: A large text block where additional information specific to the event being logged is recorded. This is often the most significant field for the analyst.
+
+NOTE: The description is normally displayed above the other fields in the general view of the event viewer, and it is also often referred to as the message. 
+
+process of work
+
+ From the Windows Start menu, enter task scheduler to launch Task Scheduler.
+
+
+2. Navigate to the Task Scheduler Library.
+
+
+3. Select a scheduled task.
+
+4. Select the History tab to view logs about the task.
+
+
+PowerShell Operational log is located at Application and Services Logs > Microsoft > Windows > PowerShell in the Windows Event Viewer.
 
 
 
+There are three forms of PowerShell logging.
+Module Logging — Event ID 4103
+Script Block Logging — Event ID 4104
+Transcription
+
+account creation event ids
+image saved : userlogontype
+
+Account Creation Events #######################
+
+Event 4720 is the event A user account was created. — It is important to investigate such events when no new users are expected on the domain, as creating valid accounts is often a persistence method employed by threat actors. This persistence technique is described in MITRE Technique T1136: Create Account.  
+
+vent 4732 is the event A member was added to a security-enabled local group. — This event is important to monitor when a user is added to a local or domain administrator’s group, as this is a method, in combination with user account creation — mentioned above — that threat actors maintain privileged access in a network.This is an addendum to MITRE Technique T1136: Create Account,  and is employed to ensure that the persistence maintained includes privileged access to a compromised system.
+
+Account Logon Events ###############
+
+Event 4624 is the event An account was successfully logged on. — This is generally a good thing, but it is also important to search for evidence of account logins where there should be none (i.e., an Administrator known to be on vacation logging into a Domain Controller [DC]). It is important to pay attention to the Message field of these entries, as the Username field does not indicate which user is logging on to the system. The Logon Type field is especially important in this type of event. The types correspond to Table 9.3-2.This access technique usually follows successful reconnaissance using MITRE Technique T1589.001: Gather Victim Identity Information: Credentials. 
+
+Event 4625 is the event An account failed to log on. — This is the opposite and analogous case of 4624. A number of these logs in short succession on the same accounts is indicative of a brute force password attack in progress. There are a number of codes indicating why the logon failed that help with analysis of these events. The most useful code in detecting a brute force attack is 0xC000006A, in occurs when a threat actor attempts numerous wrong passwords against a valid user account.This credential access technique is described in MITRE Technique T1110: Brute Force.  
+
+image saved : statuscodes
+
+Event 4672 is the event Special privileges assigned to new logon. — This event indicates that a user in a highly privileged group, such as local or domain administrators, has logged on and given the appropriate privileges to their logon session. If an adversary has obtained an administrator-level account, this event indicate those logins, so finding these events with an unauthorized administrator account is indicative of privileged adversary persistence in the network.This access technique usually follows successful reconnaissance to obtain administrator credentials using MITRE Technique T1589.001: Gather Victim Identity Information: Credentials.  
+
+
+Other Windows Internals Events ###############
+
+
+Event 7030 is the event Service is marked as an interactive service. — This event triggers when the system is configured to not allow interactive services, so that the service may not function properly. This event may fire when an adversary attempts to install a service as a persistence mechanism but did not realize that the host did not allow such a service.This persistence or privilege escalation technique is described in MITRE Technique T1543.003: Create or Modify System Process: Windows Service.  
+
+Event 7045 is the event A new service was installed. — This event indicates a successful installation of a Windows service, which is a routine event. However, when MCA is suspected, each of these event should be investigated to determine if the installed service is benign.The most relevant information to pay attention to in examining these logs is the Service Name, Service Type, and Service Start Type. Services that start automatically (Service Start Type 2) are highly favored by attackers for persistence.This event also logs when adversaries use the persistence technique is described in MITRE Technique T1543.003: Create or Modify System Process: Windows Service.  
+
+image saved : servicetype
+image saved : starttype
+
+Event 4688 is the event A new process has been created. — This event triggers often and is largely normal operating activity, so in a blind hunt, these logs are more noise than helpful. However, when the malicious process is known, searching for that process in these logs can reveal a great deal of information about how that process was spawned (i.e., potential vulnerabilities exploited) and other processes that were spawned by the malicious process as a parent (i.e., potential behavior post-compromise).This persistence or privilege escalation technique is described in MITRE Technique T1543: Create or Modify System Process.
+
+Event 4670 is the event Permissions on an object were changed. — This event is indicative of change of permissions on objects such as files, processes, registry, etc. If an attacker takes possession of such objects for privilege escalation or to encrypt/destroy them, this event may fire.An example of this event logging is when adversaries use the defense evasion technique described in MITRE Technique T1222.001: File and Directory Permissions Modification: Windows File and Directory Permissions Modification.
+
+Event 4657 is the event A registry value was modified. — Since the Windows registry is essentially the reference database for settings, data, and important facts that the OS and all applications within its use to function, this event logs often when auditing is enabled, because the registry is constantly being modified. Once MCA is confirmed, and the compromised user or process is identified, filtering these events for that suspect identifier yields important data about what an adversary was attempting to accomplish or what artifacts were left behind.This persistence or privilege escalation technique is described in MITRE Technique T1547.001: Boot or Logon Autostart Execution: Registry Run Keys/Startup Folder.  
+
+
+
+event id for custom logs could be useful : 4624, 4625, 4720, 4732, 7030, 7045, 4688, 4670, 4672, 1006, 1007, 4657
+
+image saved : sysmonevents
 
 
 

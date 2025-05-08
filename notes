@@ -354,21 +354,55 @@ Since cda-hr-1 is a part of the cda.corp domain, the trust relationship allows t
 ############## mod 9 lesson 2 ##################
 ################ Services ################### 
 
+image saved : priv&secription
+image saved : serviceeventIDs
+image saved : PKItable
+image saved :
+image saved :
+image saved :
+image saved :
+image saved :
+image saved :
 
 
+Services are integral parts of the Operating System (OS), run in the background without user intervention, and often have elevated permissions in order to interface with various devices and other processes.
 
 
+Windows services are applications running in the background of the OS that provide tasks that do not need user interaction. This includes implementing device/driver support, networking, authentication, remote access, and other hardware-related interfaces. Windows services are user-mode processes similar to UNIX daemon processes, which are detached from a terminal and run in the background. They can be configured to start at boot-time, manually, or on an as-needed basis, and controlled by other applications like the Service Control Manager (SCM). The SCM is a special system process — running as services.exe — that is responsible for starting, stopping, and interacting with service processes. Services are defined in the registry under HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services. Windows Service Control Programs (SCP) manage Windows services via the SCM using Remote Procedure Calls (RPC), through Application Programming Interface (API) functions. SCPs include the services.msc snap-in for the Microsoft Management Console (MMC), the CLI utility sc.exe, and any RPC client calling the appropriate service's API functions. The third-party application Service Manager (SrvMan) is an example of an SCP and is discussed later in the lesson.
 
 
+Service applications must register as a service with the system using the CreateService function. The SCM receives messages from the function and creates the appropriate registry keys. Registry keys that are associated with the service locations in the registry that have not registered through the CreateService function with the SCM are not actually treated as services.
 
 
+Services have three main names, and also can have a description of the service defined in the registry:
+Process name: The name of the running process like svchost.exe, spoolsvc.exe, or mdm.exe (seen using the tasklist /svc, Task Manager, or Process Explorer applications)Internal name: Defined in the registryDisplay name: Seen in administrative tools (optional; if not defined the internal name is used)
+Windows allows some running services to share a process with other services so there is not a one-to-one mapping between services and processes. Some common services include the Print Spooler, Event Log, Task Scheduler, and networking components. Network administrators and defenders need to weigh the benefit of a particular service and its function, and the risk of compromise if a threat actor is able to compromise that service. Services like the Print Spooler are used constantly in enterprise environments and are not easily disabled. Of note, from 1999 through early July 2021, there were at least 36 Common Vulnerabilities and Exposures (CVE) records describing vulnerabilities in the Windows Print Spooler service, most of which were determined to have Common Vulnerability Scoring System (CVSS) scores in the High category. Low category CVSS CVEs are usually not easily exploited, do not have publicly available exploitation code, or do not have a large impact on a system.
 
 
+Windows drivers are also loaded like services, and their configuration details are also housed in the same location in the registry. Service device and filesystem drivers are loaded into memory, started using similar Windows function calls, and added and managed by the SCM.
+
+This shows the sequence of operations the OS uses to try and recover from a failure in this service. The options for recovery include:
+Restart the serviceRestart the computerRun a programTake no action
+Run a program can be abused by attackers, who gain sufficient access, to specify a program — typically malware — to run when the service fails or is terminated. This is similar to the binary path name or image path name associated with a service that attackers attempt to modify for persistence and privilege escalation. The recovery Run a program attack is harder for threat actors to trigger in most situations, but may be used to obfuscate a persistence mechanism.
+
+Before the SCM executes the auto-start services, it creates the \Pipe\Ntsvcs RPC named pipe, which is used to interface between the SCM and the SCP. After handling the auto-start services, the SCM queues and starts the Automatic (Delayed Start) services. These services are not as integral to the early start-up of the OS and typically have dependencies that are in the auto-start group. RPC and named pipes are discussed in further detail in later lessons.
 
 
+There are several reasons multiple services share a single process. Each process has some overhead associated with it that takes up system resources. Mapping multiple services into a single process saves some of those resources. One disadvantage to this practice is that if a service in a shared process has errors, which cause the process to exit, all the services in the shared process also terminate. Windows has a standard process for hosting services called the Service Host (svchost.exe) process. Recall from the earlier tasks, there are multiple svchost.exe processes running, each of them hosting specific services. All services that specify svchost.exe -k <sometext> as their image path in the registry share the same process, if the argument <sometext> is the same (e.g., netsvcs).
 
+Windows servers log state changes (running, stopped, paused, etc.) for services by default, however, Windows client OSs — like Windows 10 — do not log state changes for services by default.
 
+image saved : serviceeventIDs
 
+in order to see additional details regarding these services, like the image path of the executable, the Get-CIMInstance cmdlet is used instead of Get-Service. Additionally, the service properties for CanPauseAndContinue, CanShutdown, and CanStop are displayed. The CanPauseAndContinue property indicates if the service can be paused and resumed. The CanShutdown property indicates if the service should be notified when the system is shutting down. The CanStop property indicates if the service can be stopped after it has started. The CanStop property can be targeted by attackers to make it very difficult to stop a malicious service after it has started, and usually requires configuring the system to not start the service on a reboot in order to completely mitigate it. Services with the CanStop property set to False are usually critical services related to security that may compromise the OS if stopped.
+
+Windows uses Public Key Infrastructure (PKI) to authenticate and validate digital certificates. Windows domains have many uses for certificates including authentication and authorization. An Active Directory (AD) server can be configured with the Certificate Services (AD CS) role to manage issuing and authenticating certificates within a domain or organization.
+
+classes of certificates including Root CA, Intermediate CA, and End Entity certificate. The requester (intermediate or end entity) designates the ways a particular certificate can be used. The CA signer verifies the request was from the expected entity and signs and issues the certificate. Certificates can be used for many uses, including:
+image saved : PKItable
+
+############## mod 9 lesson 3 ##################
+################ Windows Logging ################### 
 
 
 

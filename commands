@@ -203,24 +203,49 @@ powershell
 ################ Services ################### 
 
 
+command line
+tasklist /svc : view the running processes and any services associated with them
+sc query :  query the status of all services on cda-win-hunt
+sc query spooler : query the status of the Print Spooler service:
+sc queryex spooler :  query the extended status of the Print Spooler service
+sc qc spooler : query the configuration settings for the Print Spooler service
+sc qdescription spooler : query the description of the Print Spooler service
+sc query state= all : view all configured services and drivers
+sc qprivs spooler : view the privileges of the Print Spooler service
+qprivs option to SC shows the security privileges associated with a service. Since most services run under the context of the Local System user, which has elevated permissions. Threat actors often target services that have elevated privileges in order to elevate their current access or hide
+image saved priv&secription
+command line
+
+command line
+sc \\cda-dc query : command to remotely query the services on the cda-dc VM
+sc \\cda-dc stop spooler : command to remotely stop the Print Spooler service on cda-dc
+sc \\cda-dc query spooler :  command to check the status of the Print Spooler service after sending the stop command
+sc \\cda-dc start spooler :  In the Administrator: Command Prompt, run the following command to restart the Print Spooler service:
+command line 
+
+powershell
+Get-Service -computer cda-dc : command to remotely query the services on cda-dc:
+Get-Service -computer cda-dc "spool*" :  command to query the status of services like the term spool:
+Get-Service -computer cda-dc "spool*" | Select-Object * : command to view the properties associated with a service object returned from the Get-Service cmdlet
+Get-CIMInstance win32_service | ?{$_.Name -like '*spool*'} | select * :  command to use WMI to view the details of the Print Spooler local service
+Get-CIMInstance -ComputerName cda-dc win32_service | ?{$_.Name -like '*spool*'} | select * : command to view the details of the Print Spooler service on cda-dc
+powershell
+
+powershell
+certutil -adca : command to view the CA certificates registered with the AD domain, notice (Signature matches Public Key
+																																																																																												Root Certificate: Subject matches Issuer)
+nugget used in class lab commands was able to get all question awnsered on just using the first command
+Get-ciminstance -computername cda-dc,cda-file,cda-exec-1,cda-exec-2,cda-exec-3,cda-hr-1,cda-hr-2,cda-hr-3,cda-mail win32_service | where name -like '*sysmon*' | where name -notlike 'sysmon64' | select *
 
 
+Get-ciminstance win32_service cda-mail | where name -eq 'sysmon32' | select *
 
 
+Get-ciminstance -computername cda-dc,cda-file,cda-exec-1,cda-exec-2,cda-exec-3,cda-hr-1,cda-hr-2,cda-hr-3,cda-mail win32_service | where Name -like '*sysmon*' | select *
+powershell
 
-
-
-
-
-
-
-
-
-
-
-
-
-
+############## mod 9 lesson 3 ##################
+################ Windows Logging ################### 
 
 
 

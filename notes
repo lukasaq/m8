@@ -240,6 +240,119 @@ GetLocaleInfoW returns identifiers that indicate the region and language options
 (.exe)=import
 DLL=export
 
+############## mod 9 lesson 1 ##################
+################ Registry ################### 
+
+IMAGE SAVED : M9L1REGISTRY
+IMAGE SAVED : M9L1datatypes
+IMAGE SAVED : M9L1rootkey
+IMAGE SAVED : M9L1HKCU_subkey
+IMAGE SAVED : M9L1HKLM_subkeys
+IMAGE SAVED : M9L1inicators
+IMAGE SAVED : 
+IMAGE SAVED : 
+
+There are many registry events that occur each minute. Most of these query current settings by the system and other applications. It is generally unfeasible to monitor all registry events, or even all registry edit, change, delete, and add events. A targeted approach is more effective, but may miss IOCs for unknown threats. It is important for analysts and defenders to carefully tune any monitoring of registry events to the operating environment and threat level. Some of the important registry keys are discussed in this lesson. Specifically any registry key that is used to affect automatic execution, run on login, change in services, browser helper objects, File Explorer shell extensions, scheduled tasks, and drivers, among others, are some of the critical keys to be aware of and tune monitoring as threats dictate. The Windows Sysinternals Autoruns tool searches through many of these locations and registry keys and is used to assist in monitoring and detecting changes to the baseline configuration set by an organization. System Monitor (Sysmon) and Process Monitor (Procmon) are other tools in the Sysinternals suite used interactively and in unattended modes to monitor for these types of changes, but require tuning and filtering to not overload logging.
+
+Techniques ###############
+
+The MITRE ATT&CK framework details the following techniques specifically associated with the Windows registry:
+
+T1012 Query Registry: Through a variety of tools, threat groups access the registry to query for system configuration data to include security credentials, users, permissions, antivirus or host intrusion detection/protection software, and other system profiling data
+
+T1112 Modify Registry: Through a variety of methods, threat groups interact with the Windows registry to hide configuration information within registry keys, remove information as part of cleaning up, or as part of other techniques to aid in persistence and execution
+
+T1552.002 Unsecured Credentials: Credentials in Registry: Threat groups search the registry on compromised systems for insecurely stored credentials
+
+T1574.001 Boot or Logon Autostart Execution: Registry Run Keys/Startup Folder: Threat groups modify the registry to achieve persistence by adding a program to a startup folder or referencing it with a registry run key
+
+T1574.011 Hijack Execution Flow: Services Registry Permissions Weakness: Threat groups execute their own malicious payloads by hijacking the registry entries used by services, use flaws in the permissions for registry to redirect from the originally specified executable to one that they control, in order to launch their own code at service start, and change local service configuration information in the registry
+
+Mitigations ############ 
+
+The key mitigation MITRE ATT&CK has identified is to restrict the registry permissions so that specific permissions are required to modify certain hives or keys in the registry. This is not an absolute mitigation as threat groups often use privilege escalation techniques to gain execution as a user that can modify those restricted keys. Monitoring is essential for critical keys to identify MCA.
+
+M1024 Restrict Registry Permissions: Restrict the ability to modify certain hives or keys in the Windows registry
+
+
+Registry Description ##############
+
+The registry is a vital piece of Windows systems and holds the vast majority of configuration data for the Operating System (OS) and applications. It includes settings for the system and for each user. Registry data is read during the following principal events:
+
+Initial boot: The boot loader reads the list of boot device drivers to load into memory
+
+Kernel boot: The kernel reads settings that specify which device drivers to load and settings for other subsystems (memory manager, process manager, etc.)
+
+Log on: During a user’s log on, File Explorer reads per-user settings from the registry (includes drive-letter mappings, wallpaper, screensaver, desktop appearance, etc.)
+
+Application startup: Applications read systemwide and per-user settings during startup (can include licenses, menu and toolbar settings, recent documents, and other application settings)
+
+the HKU root key contains the profile settings for all users with a profile on the current system, based on their Security Identifier (SID). There is also a subkey for DEFAULT, which is used for processes running under the local system account.
+
+a user logs into the system for the first time and does not have a roaming profile, a profile is created for them based on the profile stored in the %SystemDrive%\Users\Default directory.
+
+The HKCU root key is a link to the currently logged-in user’s SID key in the HKU root key. It is located on the hard disk at \Users\<username>\Ntuser.dat (older versions of Windows stored user profile information in \Documents and Settings\<username>\NTUSER.dat).
+
+The registry keys HKCU\SOFTWARE\Microsoft\CurrentVersion\Run and HKCU\SOFTWARE\Microsoft\CurrentVersion\RunOnce hold values that indicate commands that should be run when that user logs in. The most common registry keys associated with this behavior are listed below. This list includes the keys that are applied to all users — HKLM — and the ones associated with the current user — HKCU.
+
+HKLM\Software\Microsoft\Windows\CurrentVersion\Run
+HKCU\Software\Microsoft\Windows\CurrentVersion\Run
+HKLM\Software\Microsoft\Windows\CurrentVersion\RunOnce
+HKCU\Software\Microsoft\Windows\CurrentVersion\RunOnce
+HKLM\Software\Microsoft\Windows\CurrentVersion\RunOnceEx (not created by default on Windows Vista and newer, but can be created by MCAs or system administrators)
+HKCU\Software\Microsoft\Windows NT\CurrentVersion\Run (legacy; older versions of Windows)
+
+By default, the value of a RunOnce key is deleted before the command is run. If the value name is prefixed with an exclamation point (!), the deletion is deferred until after the command runs. If the value name is prefixed with an asterisk (*), the program starts in Safe mode, which is not the default. These registry keys reference the programs to run directly or as a dependency (e.g., depend on a .dll to load: HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\RunOnceEx\0001\Depend with the value C:\Users\trainee\bad.dll). The following list shows registry keys used to set Startup folder items for persistence:
+
+HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders
+HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders
+HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders
+HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders
+
+The following list shows registry keys used to control automatic startup of services during boot:
+
+HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\RunServicesOnce
+HKCU\Software\Microsoft\Windows\CurrentVersion\RunServicesOnce
+HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\RunServices
+HKCU\Software\Microsoft\Windows\CurrentVersion\RunServices
+
+Policy settings can be set to specify startup programs in these registry keys:
+
+HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer\Run
+HKCU\Software\Microsoft\Windows\CurrentVersion\Policies\Explorer\Run
+
+Custom actions can be added to the Winlogon key to add additional actions that occur on a computer system running Windows 7 and later:
+
+HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon\Userinit
+HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon\Shell
+
+Run the following commands to create a new registry key, copy a value from one key to another key, verify the changes, and remove the copy: next 5 commands
+
+New-Item -path Registry::HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\RunOnce
+
+Copy-ItemProperty -Path Registry::HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\Run -name OneDrive -Destination Registry::hkcu\SOFTWARE\Microsoft\Windows\CurrentVersion\RunOnce
+
+Get-ItemProperty -Path Registry::HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\RunOnce
+
+Remove-Item -path Registry::HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\RunOnce
+
+Get-ItemProperty -Path Registry::HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\RunOnce :  second Get-ItemProperty command verifies that the key was removed and shows an error message.
+
+The registry entries under the SAM, SECURITY, and BCD keys are modified and changed with specific tools and applications within Windows in order to limit and prevent accidental or intentional configuration changes that may make the system unusable.
+
+Changes that an attacker may make can be detected by watching for changes to the HKLM\SAM\SAM\DOMAINS\Account\Users\Names\<accountname> keys (Sysmon Event Identifier [ID] 12). Validating when new users are added and changes to the Local Administrators group (HKLM\SAM\SAM\Domains\Builtin\Aliases\0000220\) can identify rogue accounts and MCA (Sysmon Event ID 13). 
+
+The HKLM\SYSTEM key stores system-wide security policies and user-rights assignments and is linked to the HKLM\SAM keys. Both of these keys and their subkeys can be seen in regedit in the SYSTEM account context, but the information is not very useful as it is not in a format meant to be read and understood by humans and is mostly undocumented. The subkeys HKLM\SYSTEM\ControlSet001 and HKLM\SYSTEM\CurrentControlSet refer to specific Windows settings where CurrentControlSet is the currently running settings and not necessarily saved to ControlSet001 (or other number for multiple control sets).
+
+Invoke-Command cmdlet uses the capabilities of PowerShell to run commands on remote systems and takes advantage of the domain trust relationship for authentication. The system to run the command on is specified by -ComputerName cda-dc with the logon credentials supplied from the variable saved by the Get-Credential cmdlet in Step 9. The actual command to execute is enclosed in braces ({…}) and is the same command run locally to retrieve the profile list from the registry.
+
+
+Since cda-hr-1 is a part of the cda.corp domain, the trust relationship allows the remote access using PowerShell without any additional configuration. From a non-domain member computer, there may be additional configuration requirements to use PowerShell for remote management.
+
+
+
+############## mod 9 lesson 2 ##################
+################ Services ################### 
 
 
 

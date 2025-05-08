@@ -107,6 +107,161 @@ List all processes that have loaded the DLL advapi32.dll with the following comm
 listdlls -d advapi32.dll | more
 
 
+############## mod 9 lesson 1 ##################
+################ Registry ################### 
+
+ Get-ChildItem -Path Registry::HKEY_Current_User : get path
+ Get-ItemProperty -Path : is used for registry keys to return the values for that key
+
+Get-ChildItem -Path Registry::HKCU : cmdlet to list the registry keys under the HKCU root key:
+Get-ItemProperty -PATH Registry::HKCU\Environment : Query the HKCU\Environment key
+Get-ItemProperty -PATH Registry::HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows\CurrentVersion\Run | select * -Exclude PS* : Query the HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\Run key
+
+
+Get-ChildItem -Path Registry::HKLM\SYSTEM\CurrentControlSet\Enum\USBSTOR -Recurse : Query the HKLM\SYSTEM\CurrentControlSet\Enum\USBSTOR with the -Recurse option:
+Get-ItemProperty -Path Registry::HKLM\SYSTEM\MountedDevices : Query the HKLM\SYSTEM\MountedDevices key:
+Get-ChildItem -Path Registry::HKLM\SYSTEM\CurrentControlSet\Services : Query the HKLM\SYSTEM\CurrentControlSet\Services key:
+
+powershell
+
+Run the following commands to create a new registry key, copy a value from one key to another key, verify the changes, and remove the copy: next 5 commands
+
+New-Item -path Registry::HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\RunOnce
+
+Copy-ItemProperty -Path Registry::HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\Run -name OneDrive -Destination Registry::hkcu\SOFTWARE\Microsoft\Windows\CurrentVersion\RunOnce
+
+Get-ItemProperty -Path Registry::HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\RunOnce
+
+Remove-Item -path Registry::HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\RunOnce
+
+Get-ItemProperty -Path Registry::HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\RunOnce :  second Get-ItemProperty command verifies that the key was removed and shows an error message.
+powershell
+
+command line
+reg /? : Run the reg command with the help switch (/?)
+
+The reg command has the following syntax:
+reg (QUERY | ADD | DELETE | COPY | SAVE | LOAD | UNLOAD | RESTORE | COMPARE | EXPORT | IMPORT | FLAGS) [Parameter List]
+
+reg query /? : following command to review the help for the query operation
+reg query HKLM\Software\Microsoft\Windows\CurrentVersion\Run : following command to query the processes running
+reg add HKLM\Software\Microsoft\Windows\CurrentVersion\Run /v test /t REG_SZ /d “c:\Windows\System32\notepad.exe” : following commands to add a value to a key and validate that it was added
+reg query HKLM\Software\Microsoft\Windows\CurrentVersion\Run : check last command 
+
+The following switches provide specific information:
+/v: Value
+/t: Data type
+/d: Actual data to assign to the value
+/f to force an overwrite of the existing value with the same name.
+
+reg delete HKLM\Software\Microsoft\Windows\CurrentVersion\Run /v test : following command to delete the key, and enter Yes to the prompt
+reg add HKLM\Software\Microsoft\Windows\CurrentVersion\Run\test : Run the following command to add a subkey
+Run the following commands to delete the subkey and verify it was deleted next 2 commands
+reg delete HKLM\Software\Microsoft\Windows\CurrentVersion\Run\test
+reg query HKLM\Software\Microsoft\Windows\CurrentVersion\Run
+notice now there are onlt 2 and test was deleted
+command line
+
+powershell
+Get-Help Get-ItemProperty : help for the command let
+Get-ItemProperty -Path HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Run :  following command to query the value of the Run key
+
+Run the following commands to add a registry value and verify: next 2 commands
+Set-ItemProperty -path 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Run' -Name 'test' -value 'C:\Windows\System32\notepad.exe'
+Get-ItemProperty -path HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Run
+
+Run the following commands to change test value to calc.exe from notepad.exe from pervious 2 command: next 2 commands
+Set-ItemProperty -path 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Run' -Name 'test' -value 'C:\Windows\System32\calc.exe'
+Get-ItemProperty -path HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Run 
+
+Run the following commands to rename the test value to test2 and verify: next 2 commands
+Rename-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Run' -Name 'test' -NewName 'test2'
+Get-ItemProperty -path HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Run
+
+Run the following commands to delete the test2 value and verify deletion: next 2 commands
+Remove-ItemProperty -path 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Run' -Name 'test2'
+Get-ItemProperty -path HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Run
+powershell
+
+powershell
+
+following command to prepare to store credentials in a variable ($cred) for use in an upcoming remote command:
+$cred=Get-Credential
+
+following command to execute a remote command to query the ProfileList key on cda-dc — 174.16.1.6
+Invoke-Command -ComputerName cda-dc -Credential $cred -Command {Get-ItemProperty -Path 'Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\ProfileList'}
+
+Invoke-Command cmdlet uses the capabilities of PowerShell to run commands on remote systems and takes advantage of the domain trust relationship for authentication. The system to run the command on is specified by -ComputerName cda-dc with the logon credentials supplied from the variable saved by the Get-Credential cmdlet in Step 9. The actual command to execute is enclosed in braces ({…}) and is the same command run locally to retrieve the profile list from the registry.
+
+
+Since cda-hr-1 is a part of the cda.corp domain, the trust relationship allows the remote access using PowerShell without any additional configuration. From a non-domain member computer, there may be additional configuration requirements to use PowerShell for remote management.
+
+powershell
+
+
+############## mod 9 lesson 2 ##################
+################ Services ################### 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

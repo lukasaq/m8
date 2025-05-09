@@ -336,11 +336,12 @@ commands
 
 rcs08-portal.pcte.mil
 
+binary path is c:->.exe
+binary is just the .exe
 
-
-
-
-
+hkcu-.run
+hklm->run
+regedit
 
 
 
